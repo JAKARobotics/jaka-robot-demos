@@ -45,7 +45,6 @@ def loadJsonFile(jsonFile):
 #     logger=logging.getLogger('logger')
 #     logger.debug(message)
 
-dashscope.api_key=os.getenv('DASHSCOPE_API_KEY')
 
 # def draw_box(image, obj_locations, obj_lables, color=(0, 255, 0), font_scale=0.9, thickness=2):
 #     """
@@ -102,6 +101,7 @@ dashscope.api_key=os.getenv('DASHSCOPE_API_KEY')
 
 
 
+dashscope.api_key=os.getenv('DASHSCOPE_API_KEY')
 
 
 def simple_multimodal_conversation_call(image_file, text):
@@ -124,24 +124,72 @@ def simple_multimodal_conversation_call(image_file, text):
         }
     ]
 
-    response = MultiModalConversation.call(model='qwen-vl-max-2025-01-25',  
-                                           # seed=random.randint(1,20000),
-                                           messages=messages,
-                                           result_format='message',
-                                           response_format={'type': 'json_object'})
-    # The response status_code is HTTPStatus.OK indicate success,
-    # otherwise indicate request is failed, you can get error code
-    # and message from code and message.
+    print(f"\n[API调用] 发送请求到阿里云API...")
+    print(f"[API调用] 图像路径: {image_file}")
+    print(f"[API调用] 提示文本: {text}")
+    
+    try:
+        response = MultiModalConversation.call(model='qwen-vl-max-2025-01-25',  
+                                               # seed=random.randint(1,20000),
+                                               messages=messages,
+                                               result_format='message',
+                                               response_format={'type': 'json_object'})
+        # The response status_code is HTTPStatus.OK indicate success,
+        # otherwise indicate request is failed, you can get error code
+        # and message from code and message.
 
-    if response.status_code == HTTPStatus.OK:
-        ans = response.output.choices[0].message.content
-    else:
-        ans = None
-        print(response.code)  # The error code.
-        print(response.message)  # The error message.
-    return ans
+        if response.status_code == HTTPStatus.OK:
+            ans = response.output.choices[0].message.content
+            print(f"[API调用] 请求成功，状态码: {response.status_code}")
+            print(f"[API调用] 返回内容类型: {type(ans)}")
+            if isinstance(ans, str):
+                print(f"[API调用] 返回内容长度: {len(ans)} 字符")
+                print(f"[API调用] 返回内容预览: {ans[:200]}...")
+            elif isinstance(ans, list):
+                print(f"[API调用] 返回内容: {ans}")
+            return ans
+        else:
+            print(f"\n[API调用错误] 请求失败!")
+            print(f"[API调用错误] 状态码: {response.status_code}")
+            print(f"[API调用错误] 错误代码: {response.code}")
+            print(f"[API调用错误] 错误信息: {response.message}")
+            if hasattr(response, 'request_id'):
+                print(f"[API调用错误] 请求ID: {response.request_id}")
+            return None
+    except Exception as e:
+        print(f"\n[API调用异常] 发生异常: {type(e).__name__}")
+        print(f"[API调用异常] 异常信息: {str(e)}")
+        import traceback
+        print(f"[API调用异常] 详细错误:\n{traceback.format_exc()}")
+        return None
 
 def vl_ali(tags,img_path):
+    print(f"\n{'='*60}")
+    print(f"【开始调用阿里云视觉检测API】")
+    print(f"{'='*60}")
+    
+    # Check API key
+    api_key = os.getenv('DASHSCOPE_API_KEY')
+    if not api_key:
+        print(f"[错误] 未设置 DASHSCOPE_API_KEY 环境变量!")
+        print(f"[错误] 请设置环境变量: export DASHSCOPE_API_KEY='your_api_key'")
+        return [], []
+    else:
+        print(f"[API配置] API Key已设置 (长度: {len(api_key)} 字符)")
+    
+    # Check if image file exists
+    if not os.path.exists(img_path):
+        print(f"[错误] 图像文件不存在: {img_path}")
+        return [], []
+    
+    # Check image file size
+    file_size = os.path.getsize(img_path)
+    print(f"[图像检查] 图像路径: {img_path}")
+    print(f"[图像检查] 文件大小: {file_size / 1024:.2f} KB")
+    if file_size == 0:
+        print(f"[错误] 图像文件为空!")
+        return [], []
+    
     text = "请帮我将"
     for i in range(len(tags)):
         if i==len(tags)-1:
@@ -150,25 +198,87 @@ def vl_ali(tags,img_path):
             text+="，"
         text+=tags[i]
     text+="这{}种物体在图中框取出来".format(len(tags))
-    print(text)
+    print(f"[提示文本] {text}")
+    
     image_file = f"file://{img_path}"
     ans=simple_multimodal_conversation_call(image_file,text)
 
-
+    print(f"\n{'='*60}")
+    print(f"【API响应处理】")
+    print(f"{'='*60}")
+    
+    if ans is None:
+        print("[错误] API返回为空，可能是:")
+        print("  1. API调用失败（网络问题、认证问题等）")
+        print("  2. API服务异常")
+        print("  3. 图像格式不支持")
+        return [], []
+    
+    print(f"[API响应] 收到响应，类型: {type(ans)}")
+    
     if ans and isinstance(ans, list) and len(ans) > 0:
+        print(f"[API响应] 响应是列表，长度: {len(ans)}")
         ans_text = ans[0].get('text', '')
+        print(f"[API响应] 提取的文本内容: {ans_text[:500]}...")
+        
         try:
-            json_data = json.loads(ans_text.strip('```json\n').strip('```'))
+            # Try to parse JSON from the response
+            json_str = ans_text.strip()
+            # Remove markdown code blocks if present
+            if '```json' in json_str:
+                json_str = json_str.split('```json')[1].split('```')[0].strip()
+            elif '```' in json_str:
+                json_str = json_str.split('```')[1].split('```')[0].strip()
+            
+            print(f"[JSON解析] 尝试解析JSON...")
+            json_data = json.loads(json_str)
+            print(f"[JSON解析] 解析成功! 检测到 {len(json_data)} 个物体")
+            
             objs = [item['label'] for item in json_data]
             objPos = [[item['bbox_2d'][0], item['bbox_2d'][1], item['bbox_2d'][2], item['bbox_2d'][3]] for item in json_data]
+            
+            print(f"[检测结果] 物体标签: {objs}")
+            print(f"[检测结果] 边界框数量: {len(objPos)}")
+            for i, (label, bbox) in enumerate(zip(objs, objPos)):
+                print(f"  物体 {i+1}: {label} -> 边界框: {bbox}")
 
         except json.JSONDecodeError as e:
-            print(f"JSON ERROR: {e}")
+            print(f"[JSON解析错误] JSON解析失败!")
+            print(f"[JSON解析错误] 错误信息: {e}")
+            print(f"[JSON解析错误] 原始响应内容:")
+            print(f"  {ans_text}")
+            print(f"\n[判断] 这可能是:")
+            print(f"  1. API返回了非JSON格式的文本（可能真的没有检测到物体）")
+            print(f"  2. API返回格式不符合预期")
+            print(f"  3. 图像中确实没有找到目标物体")
+            objs = []
+            objPos = []
+        except KeyError as e:
+            print(f"[数据格式错误] 响应数据缺少必要字段: {e}")
+            print(f"[数据格式错误] 原始响应: {ans}")
+            objs = []
+            objPos = []
+        except Exception as e:
+            print(f"[处理错误] 处理响应时发生未知错误: {type(e).__name__}")
+            print(f"[处理错误] 错误信息: {e}")
+            import traceback
+            print(f"[处理错误] 详细错误:\n{traceback.format_exc()}")
             objs = []
             objPos = []
     else:
+        print(f"[API响应] 响应格式不符合预期")
+        print(f"[API响应] 响应内容: {ans}")
+        print(f"\n[判断] 可能的原因:")
+        print(f"  1. API返回了空结果（图像中确实没有目标物体）")
+        print(f"  2. API返回格式不符合预期")
         objs = []
-        objPos = [] 
+        objPos = []
+    
+    print(f"{'='*60}")
+    print(f"【检测结果】")
+    print(f"  检测到的物体数量: {len(objs)}")
+    print(f"  边界框数量: {len(objPos)}")
+    print(f"{'='*60}\n")
 
     return objs,objPos
 

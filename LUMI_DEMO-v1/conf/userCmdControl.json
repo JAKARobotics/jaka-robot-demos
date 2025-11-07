@@ -5,10 +5,20 @@
     "enable_sync":true,
     "saveImgPath": "./images/project1"
   },
+  
+  "calibrateParams": {
+    "projectName": "project1",
+    "robotIP": "192.168.10.90",
+    "CalibrateImageSaveDir": "./lumi_hand_Calibration_images/",
+    "CalibResultSavePath": "./CalibParams.json",
+    "boardRowNums": 8,
+    "boardCowNums": 11,
+    "boardLength": 10
+  },
 
   "objects": {
-    "moveObjects": "yellow doll",
-    "putObject": "box"
+    "moveObjects": "bottle",
+    "putObject": "people"
   },
 
   "robotParams": {
@@ -20,13 +30,6 @@
     "RelativeOffset-Y": 30
   },
 
-  "calibrateParams": {
-    "robotIP": "192.168.10.90",
-    "CalibrateImageSaveDir": "./lumi_handCam/",
-    "boardRowNums": 8,
-    "boardCowNums": 11,
-    "boardLength": 10
-  },
 
   "genNearPointParams":{
     "nearPointInterval": 20,

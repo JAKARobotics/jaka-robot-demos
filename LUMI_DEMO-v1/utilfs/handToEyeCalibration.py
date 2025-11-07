@@ -6,15 +6,26 @@ from math import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Calibration:
-    def __init__(self,boardWidth,boardHeight,squareSize,ShowCorners=False):
+# Get project root directory (parent of utilfs directory)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONF_DIR = os.path.join(PROJECT_ROOT, 'conf')
 
+def get_project_path(relative_path):
+    """Convert relative path to absolute path based on project root."""
+    if os.path.isabs(relative_path):
+        return relative_path
+    # Remove leading './' or '../'
+    clean_path = relative_path.lstrip('./')
+    return os.path.join(PROJECT_ROOT, clean_path)
+
+class Calibration:
+    def __init__(self,boardWidth,boardHeight,squareSize,ShowCorners=False,project_name=None):
         self.boardWidth=boardWidth  
         self.boardHeight=boardHeight  
         self.squareSize=squareSize
         self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
         self.ShowCorners=ShowCorners
+        self.project_name = project_name or "default"
 
     def calibCamera(self,images,boardWidth,boardHeight,squareSize,criteria,ShowCorners=False):
         objp = np.zeros((boardWidth * boardHeight, 3), np.float32)
@@ -55,11 +66,18 @@ class Calibration:
                     cv2.imshow('findCorners', img)
                     cv2.waitKey(1000)
                     cv2.destroyAllWindows()
-                # make folder
-                if not os.path.exists("../DetectedCorners"):
-                    os.makedirs("../DetectedCorners")
+                # make folder for detected corners (only if ShowCorners is True)
+                if ShowCorners:
+                    # Use project-specific directory if project_name is provided
+                    if self.project_name and self.project_name != "default":
+                        detected_corners_dir = get_project_path(f"projects/{self.project_name}/DetectedCorners")
+                    else:
+                        detected_corners_dir = get_project_path("DetectedCorners")
+                    if not os.path.exists(detected_corners_dir):
+                        os.makedirs(detected_corners_dir)
 
-                cv2.imwrite("DetectedCorners/DetectedCorners" + str(i) + ".png", img)
+                    corner_filename = f"{self.project_name}_DetectedCorners_{i}.png" if self.project_name != "default" else f"DetectedCorners{i}.png"
+                    cv2.imwrite(os.path.join(detected_corners_dir, corner_filename), img)
 
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objectPoints, imagePoints, grayshape, None,None)
         print("ret:", ret)  
@@ -200,7 +218,7 @@ class Calibration:
         return rot_mat
 
     # process  calibrator.process(calibrateImages, robotPoses)
-    def process(self, imgs, worldPoses,isEyeToHand=True):
+    def process(self, imgs, worldPoses, isEyeToHand=True, calib_result_save_path=None):
         if isinstance(imgs, str):
             images=[]
             imgs = [os.path.join(imgs, tmp) for tmp in os.listdir(imgs)]
@@ -212,7 +230,12 @@ class Calibration:
             images=imgs
 
         if isinstance(worldPoses, str):
-            worldPoses = np.loadtxt('../data1/robotTcpPos.txt', delimiter=',')
+            # If it's a file path, load from file
+            if os.path.isabs(worldPoses):
+                worldPoses_path = worldPoses
+            else:
+                worldPoses_path = get_project_path(worldPoses)
+            worldPoses = np.loadtxt(worldPoses_path, delimiter=',')
 
         objectPoints, imagePoints, mtx, dist = self.calibCamera(images, self.boardWidth,
                                                                                     self.boardHeight, self.squareSize,
@@ -244,7 +267,7 @@ class Calibration:
 
         print(RT_camera2base)
 
-        self.SaveCalibResult(mtx, dist, R_camera2base, T_camera2base) # save params to json
+        self.SaveCalibResult(mtx, dist, R_camera2base, T_camera2base, calib_result_save_path) # save params to json
 
         self.CalculateExtrinsicEyeToHandRms(worldPoses,RT_camera2base,R_target2camera_list,T_target2camera_list)
 
@@ -334,7 +357,7 @@ class Calibration:
             print(RT_target2base)
             print('')
 
-    def SaveCalibResult(self,mtx,dist,R_camera2base, T_camera2base):
+    def SaveCalibResult(self, mtx, dist, R_camera2base, T_camera2base, calib_result_save_path=None):
         print("CameraMatrix:",mtx)
         print("CameraDistCoeffs: ",dist)
         print("RotationMat: ",R_camera2base)
@@ -348,11 +371,26 @@ class Calibration:
         calibrateCameraResult["TranslationMat"] = T_camera2base.tolist()
 
         try:
-            with open("./conf/CalibParams.json", "w") as f:
+            # Use provided path or default to conf directory
+            if calib_result_save_path is None:
+                calib_params_path = os.path.join(CONF_DIR, "CalibParams.json")
+            else:
+                # Convert relative path to absolute path if needed
+                if os.path.isabs(calib_result_save_path):
+                    calib_params_path = calib_result_save_path
+                else:
+                    calib_params_path = get_project_path(calib_result_save_path)
+            
+            # Ensure the directory exists
+            save_dir = os.path.dirname(calib_params_path)
+            if save_dir and not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+            
+            with open(calib_params_path, "w") as f:
                 f.write(json.dumps(calibrateCameraResult, indent=4, ensure_ascii=False))
-            print("【SAVE SUCCESS...】")
-        except:
-            print("【SAVE FAILURE...】")
+            print(f"【SAVE SUCCESS...】标定结果已保存到: {calib_params_path}")
+        except Exception as e:
+            print(f"【SAVE FAILURE...】Error: {e}")
 
 if __name__ == "__main__":
     calibrator = Calibration(9, 7, 0.001)

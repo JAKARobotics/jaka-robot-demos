@@ -1,17 +1,18 @@
+import os
 import json
-from utilfs.tools import pixel_to_world, loadJsonFile, generatorNearPoints
-# from OrbbecSDK.orbbecCamera import Camera
-from pyorbbecsdk import *
-from OrbbecSDK.orbbecUtils import frame_to_bgr_image
-# from pyorbbecsdk.orbbecUtils import frame_to_bgr_image
-
-# from orbbecUtils import frame_to_bgr_image
 import cv2
 import numpy as np
 import sys
 import time
+from utilfs.tools import pixel_to_world, loadJsonFile, generatorNearPoints
+from pyorbbecsdk import *
+from OrbbecSDK.orbbecUtils import frame_to_bgr_image
 from utilfs.jaka import *
 from utils.log import *
+
+# Get project root directory
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONF_DIR = os.path.join(PROJECT_ROOT, 'conf')
 
 PI=3.1415926
 
@@ -51,11 +52,11 @@ class TemporalFilter:
         return result
 
 
-with open("./conf/CalibParams.json", "r") as f:
+with open(os.path.join(CONF_DIR, "CalibParams.json"), "r") as f:
     data = json.load(f)
 print("CalibParams：",data)
 
-mapJsonData = loadJsonFile('./conf/userCmdControl.json')
+mapJsonData = loadJsonFile(os.path.join(CONF_DIR, 'userCmdControl.json'))
 # print(mapJsonData["calibrateParams"])
 
 tcp = JAKA(mapJsonData["calibrateParams"]["robotIP"])

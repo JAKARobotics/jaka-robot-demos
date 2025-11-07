@@ -1,8 +1,30 @@
+"""
+visualDetect_ali.py - 基于视觉大模型的机器人自动分拣程序
+
+功能：
+    - 使用阿里云视觉大模型API进行物体检测
+    - 通过Orbbec相机获取RGB和深度图像
+    - 将像素坐标转换为机器人世界坐标
+    - 控制JAKA机器人完成自动抓取和放置
+
+使用方法：
+    1. 配置环境变量: export DASHSCOPE_API_KEY="your_api_key"
+    2. 配置 conf/userCmdControl.json 中的参数
+    3. 确保已完成手眼标定（CalibParams.json存在）
+    4. 运行程序: python visualDetect_ali.py
+
+详细说明请参考: visualDetect_ali_使用说明.md
+"""
 import time
 import cv2
+import os
 from OrbbecSDK.orbbecCamera import Camera
 from utilfs.jaka import *
 from utilfs.tools import loadJsonFile, saveOriginImg, generatorNearPoints, pixel_to_world,vl_ali
+
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CONF_DIR = os.path.join(SCRIPT_DIR, 'conf')
 
 
 step_flag = None # -1：catch 1：put
@@ -92,8 +114,8 @@ def jointMove(mv_type,base2obj_pos,base2objup_pos,objup2obj_pos,grab_status):
     return 
 
 if __name__=='__main__':
-    mapJsonData = loadJsonFile('./conf/userCmdControl.json')
-    calibParams = loadJsonFile('./conf/CalibParams.json')
+    mapJsonData = loadJsonFile(os.path.join(CONF_DIR, 'userCmdControl.json'))
+    calibParams = loadJsonFile(os.path.join(CONF_DIR, 'CalibParams.json'))
 
     robot = JAKA(mapJsonData["calibrateParams"]["robotIP"], connect=True)
     robot._login()
@@ -123,11 +145,46 @@ if __name__=='__main__':
         cam.close()
 
         # Save  originimg
-        img_path = saveOriginImg(color_img,mapJsonData["cameraParams"]["saveImgPath"])
+        save_img_path = mapJsonData["cameraParams"]["saveImgPath"]
+        # Convert relative path to absolute path if needed
+        if not os.path.isabs(save_img_path):
+            save_img_path = os.path.join(SCRIPT_DIR, save_img_path.lstrip('./'))
+        
+        print(f"\n[图像保存] 保存图像到: {save_img_path}")
+        img_path = saveOriginImg(color_img, save_img_path)
+        print(f"[图像保存] 图像已保存: {img_path}")
+        
+        # Verify image was saved correctly
+        if not os.path.exists(img_path):
+            print(f"[错误] 图像保存失败，文件不存在: {img_path}")
+            continue
+        
+        img_size = os.path.getsize(img_path)
+        print(f"[图像检查] 保存的图像大小: {img_size / 1024:.2f} KB")
+        if img_size == 0:
+            print(f"[错误] 保存的图像文件为空!")
+            continue
+        
+        # Display image info
+        print(f"[图像信息] 图像尺寸: {color_img.shape[1]}x{color_img.shape[0]}")
 
         # Objects Detection
         obj_labels,obj_locs = vl_ali(tags, img_path)
         cam.close()
+
+        # Print detection results
+        print("\n" + "="*60)
+        print("【检测结果】")
+        print("="*60)
+        print(f"检测到的物体数量: {len(obj_labels)}")
+        for i in range(len(obj_labels)):
+            bbox = obj_locs[i]
+            print(f"\n物体 {i+1}:")
+            print(f"  标签: {obj_labels[i]}")
+            print(f"  边界框坐标 (x1, y1, x2, y2): [{bbox[0]}, {bbox[1]}, {bbox[2]}, {bbox[3]}]")
+            print(f"  边界框宽度: {bbox[2] - bbox[0]} pixels")
+            print(f"  边界框高度: {bbox[3] - bbox[1]} pixels")
+        print("="*60 + "\n")
 
         if len(obj_labels) != len(obj_locs):
             if put_obj not in obj_labels:
@@ -149,6 +206,24 @@ if __name__=='__main__':
             if obj_labels[i]==put_obj:
                 put_objs.append(obj_locs[i])
                 put_center.append([int(center_x), int(center_y)])
+        
+        # Print processed detection results
+        print("\n" + "="*60)
+        print("【处理后的检测结果】")
+        print("="*60)
+        print(f"移动物体 ({mv_obj}) 数量: {len(mv_objs)}")
+        for i, (bbox, center) in enumerate(zip(mv_objs, mv_centers)):
+            print(f"  移动物体 {i+1}:")
+            print(f"    边界框: [{bbox[0]}, {bbox[1]}, {bbox[2]}, {bbox[3]}]")
+            print(f"    中心点 (像素): ({center[0]}, {center[1]})")
+        
+        print(f"\n放置物体 ({put_obj}) 数量: {len(put_objs)}")
+        for i, (bbox, center) in enumerate(zip(put_objs, put_center)):
+            print(f"  放置物体 {i+1}:")
+            print(f"    边界框: [{bbox[0]}, {bbox[1]}, {bbox[2]}, {bbox[3]}]")
+            print(f"    中心点 (像素): ({center[0]}, {center[1]})")
+        print("="*60 + "\n")
+        
         print("mv_objs,mv_centers: ",mv_objs,mv_centers)
         print("put_objs,put_center: ",put_objs,put_center)
 
@@ -169,14 +244,23 @@ if __name__=='__main__':
                                                         mapJsonData["genNearPointParams"][
                                                             "nearPointTimes"])
 
-                for i, point in enumerate(gen_center_points):
+                for j, point in enumerate(gen_center_points):
                     mv_obj_depth = depth_data[point[0][1], point[0][0]]
-                    if int(mv_obj_depth) != 0 or i == len(gen_center_points):
+                    if int(mv_obj_depth) != 0 or j == len(gen_center_points):
                         break
             print("【{} depth is: {} (mm)】".format(mv_obj,mv_obj_depth))
             obj_world_loc = pixel_to_world(cur_center_pos, mv_obj_depth, calibParams["CameraMatrix"],
                 calibParams["RotationMat"],
                 calibParams["TranslationMat"])
+            
+            # Print world coordinates for move object
+            print(f"\n【移动物体 {i+1} 坐标信息】")
+            print(f"  像素坐标: ({cur_center_pos[0]}, {cur_center_pos[1]})")
+            print(f"  深度值: {mv_obj_depth} mm")
+            print(f"  世界坐标 (X, Y, Z): ({obj_world_loc[0]:.3f}, {obj_world_loc[1]:.3f}, {obj_world_loc[2]:.3f}) mm")
+            
+            # Save the last object world location for summary
+            last_obj_world_loc = obj_world_loc
             
             ref_pos = robot.getjoints()
             base_loc= robot.get_tcp_pos()
@@ -203,12 +287,27 @@ if __name__=='__main__':
                 calibParams["RotationMat"],
                 calibParams["TranslationMat"])
 
+        # Print world coordinates for put object
+        print(f"\n【放置物体坐标信息】")
+        print(f"  像素坐标: ({put_center[0]}, {put_center[1]})")
+        print(f"  深度值: {put_obj_depth} mm")
+        print(f"  世界坐标 (X, Y, Z): ({put_world_loc[0]:.3f}, {put_world_loc[1]:.3f}, {put_world_loc[2]:.3f}) mm")
+
         print('Calculate whether the location of the item to be placed is reachable')
         if mv_type == 2:
             ref_pos_d = base2objup_pos[1]
         elif mv_type == 1:
             ref_pos_d = base2obj_pos[1]
         put_type,put_loc,put_loc_up,objup2put_pos,objup2putup_pos,putup2put_pos,put_flag = kine_caculate(ref_pos_d,grip_up_loc,put_world_loc,mapJsonData,step_type=1)
+
+        # Print final summary
+        print("\n" + "="*60)
+        print("【坐标转换总结】")
+        print("="*60)
+        if len(mv_objs) > 0:
+            print(f"移动物体世界坐标: ({last_obj_world_loc[0]:.3f}, {last_obj_world_loc[1]:.3f}, {last_obj_world_loc[2]:.3f}) mm")
+        print(f"放置物体世界坐标: ({put_world_loc[0]:.3f}, {put_world_loc[1]:.3f}, {put_world_loc[2]:.3f}) mm")
+        print("="*60 + "\n")
 
         cv2.imwrite(img_path,color_img)
 

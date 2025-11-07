@@ -13,10 +13,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 # ******************************************************************************
+import os
+import sys
 from typing import Union, Any, Optional
 
-# from OrbbecSDK.pyorbbecsdk import FormatConvertFilter, VideoFrame
-# from OrbbecSDK.pyorbbecsdk import OBFormat, OBConvertFormat
+# Add pyorbbecsdk build directory to Python path
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_pyorbbecsdk_build_path = os.path.join(_current_dir, 'pyorbbecsdkMain', 'build')
+if os.path.exists(_pyorbbecsdk_build_path) and _pyorbbecsdk_build_path not in sys.path:
+    sys.path.insert(0, _pyorbbecsdk_build_path)
+
 from pyorbbecsdk import FormatConvertFilter, VideoFrame
 from pyorbbecsdk import OBFormat, OBConvertFormat
 import cv2

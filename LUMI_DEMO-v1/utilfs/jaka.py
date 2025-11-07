@@ -222,6 +222,9 @@ class JAKA():
         ret = self.robot.get_tcp_position()
         if ret[0] == 0:
             return ret[1]
+        else:
+            print(f"[JAKA] get_tcp_position failed, error code: {ret[0]}")
+            return None
 
     # get [Roll, Pitch, Yaw] pose
     def getposRPY(self):
@@ -271,8 +274,8 @@ class JAKA():
 
     def jaka_connect(self):
         self.robot = jkrc.RC(self.address)
-        print("[JAKA] logining...")
-        ret=self.robot.login()
+        print("[JAKA] logining...00000000")
+        ret=self.robot.login(1)
         print("login status: "+str(ret))
         if not self.robot.power_on():
             print("[JAKA] power_on successfully")

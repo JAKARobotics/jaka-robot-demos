@@ -1,12 +1,17 @@
-# from OrbbecSDK.pyorbbecsdk import *
-from pyorbbecsdk import *
-from OrbbecSDK.orbbecUtils import frame_to_bgr_image
-
-
+import os
+import sys
 import cv2
 import numpy as np
-import sys
 import time
+
+# Add pyorbbecsdk build directory to Python path
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_pyorbbecsdk_build_path = os.path.join(_current_dir, 'pyorbbecsdkMain', 'build')
+if os.path.exists(_pyorbbecsdk_build_path) and _pyorbbecsdk_build_path not in sys.path:
+    sys.path.insert(0, _pyorbbecsdk_build_path)
+
+from pyorbbecsdk import *
+from OrbbecSDK.orbbecUtils import frame_to_bgr_image
 
 ESC_KEY = 27
 PRINT_INTERVAL = 1  # seconds
