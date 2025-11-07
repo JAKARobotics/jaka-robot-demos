@@ -1,0 +1,35 @@
+{
+  
+  "cameraParams": {
+    "align_mode":"SW",
+    "enable_sync":true,
+    "saveImgPath": "./images/project1"
+  },
+
+  "objects": {
+    "moveObjects": "yellow doll",
+    "putObject": "box"
+  },
+
+  "robotParams": {
+    "basePose": [1.779982726648774, -0.5317580611819244, -1.0753665373391599, -0.5535891796159754, -1.1916992728855895, 1.244266479103587],
+    "relativeUpMotionHeight": 100,
+    "RelativeOffset-Z":50,
+    "RelativeOffset-Zput":50,
+    "RelativeOffset-X": 50,
+    "RelativeOffset-Y": 30
+  },
+
+  "calibrateParams": {
+    "robotIP": "192.168.10.90",
+    "CalibrateImageSaveDir": "./lumi_handCam/",
+    "boardRowNums": 8,
+    "boardCowNums": 11,
+    "boardLength": 10
+  },
+
+  "genNearPointParams":{
+    "nearPointInterval": 20,
+    "nearPointTimes": 20
+  }
+}
