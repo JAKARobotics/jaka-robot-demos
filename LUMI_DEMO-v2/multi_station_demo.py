@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+# coding:UTF-8
+'''
+多站点任务示例脚本
+演示如何使用JAKAIntegrated类在多个站点之间移动并执行检测抓取任务
+'''
+import os
+import time
+import sys
+import json
+
+# 导入集成控制类
+from utilfs.jaka_integrated import JAKAIntegrated
+# 导入检测抓取模块
+import visualDetect_ali
+
+# 从配置文件加载站点配置
+def load_stations():
+    """从配置文件加载站点配置"""
+    try:
+        with open('./conf/userCmdControl.json', 'r') as f:
+            user_config = json.load(f)
+            
+        if "stations" in user_config:
+            print("成功从配置文件加载站点信息")
+            return user_config["stations"]
+        else:
+            print("警告: 配置文件中没有站点信息，请先配置站点")
+            return {}
+    except Exception as e:
+        print(f"加载站点配置失败: {e}")
+        return {}
+
+def load_config():
+    """加载系统配置"""
+    try:
+        with open('./conf/userCmdControl.json', 'r') as f:
+            user_config = json.load(f)
+            
+        # 从userCmdControl.json的systemConfig部分获取系统配置
+        if "systemConfig" in user_config:
+            return user_config["systemConfig"]
+        else:
+            print("警告: userCmdControl.json中没有systemConfig部分，使用默认配置")
+            # return {
+            #     "robot_ip": "192.168.10.90",
+            #     "ext_base_url": "http://192.168.10.100",
+            #     "agv_ip": "192.168.10.10",
+            #     "agv_port": 31001
+            # }
+    except Exception as e:
+        print(f"加载配置文件失败: {e}")
+        # return {
+        #     "robot_ip": "192.168.10.90",
+        #     "ext_base_url": "http://192.168.10.100",
+        #     "agv_ip": "192.168.10.10",
+        #     "agv_port": 31001
+        # }
+
+def update_operation_mode(station_config):
+    """更新操作模式到配置文件"""
+    try:
+        with open('./conf/userCmdControl.json', 'r') as f:
+            user_cmd_config = json.load(f)
+        
+        # 更新操作模式
+        user_cmd_config["operationMode"] = station_config["operation_mode"]
+        
+        with open('./conf/userCmdControl.json', 'w') as f:
+            json.dump(user_cmd_config, f, indent=4)
+            
+        print(f"已更新操作模式为: {station_config['operation_mode']}")
+    except Exception as e:
+        print(f"更新操作模式失败: {e}")
+
+def execute_task_at_station(control, station_id, station_config):
+    """
+    在指定站点执行任务
+    :param control: JAKAIntegrated控制实例
+    :param station_id: 站点ID
+    :param station_config: 站点配置信息
+    """
+    print(f"准备在 {station_config['name']} 执行任务...")
+    
+    # 1. 移动到站点
+    if not control.move_to_station(station_config['name'], station_config['agv_marker']):
+        print(f"移动到 {station_config['name']} 失败，跳过此站点任务")
+        return False
+    
+
+    
+    # 2. 设置机器人和外部轴到初始位
+    if control.ext_base_url:
+        # 尝试移动外部轴，如果超出限制则会在方法内部打印错误
+        ext_result = control.ext_moveto(station_config['ext_home_pos'])
+        if not ext_result:
+            print(f"警告: 外部轴移动失败，但将继续执行任务")
+    control.rob_moveto(station_config['robot_home_pos'])
+    
+    # 检查操作模式，如果是"none"则跳过后续操作
+    operation_mode = station_config.get('operation_mode')
+    if operation_mode == 'none':
+        print(f"站点 {station_config['name']} 的操作模式为'none'，仅执行移动操作，不执行检测和抓取")
+        print(f"在 {station_config['name']} 的移动任务执行完成")
+        return True
+    
+    if operation_mode == 'put_cola':
+        print(f"站点 {station_config['name']} 的操作模式为'put_only'，仅执行移动操作，不执行检测和抓取")
+        # control.rob_moveto([292,26,98,-24,58,-102])
+        control.rob_moveto([279,60,79,-40,-2,-102],50) #1
+        control.rob_moveto([263,68,65,-40,-10,-102],50) #2
+        time.sleep(2)
+        control.grab_action(0)
+        time.sleep(1)
+        control.rob_moveto([273,68,65,16,-8,-151],50)
+        control.rob_moveto([292,26,98,-24,58,-102],50)
+        time.sleep(1)
+        return True
+
+    
+    # 3. 更新操作模式
+    update_operation_mode(station_config)
+    
+    # 4. 执行视觉检测和抓取
+    try:
+        # 这里我们通过修改系统路径并导入visualDetect_ali模块来执行任务
+        # 注意：我们假设visualDetect_ali.py已经被修改为可以作为模块导入
+        print(f"开始执行视觉检测和抓取任务，操作模式: {operation_mode}")
+        
+        # 调用visualDetect_ali.py的主函数
+        # 这里假设已经修改visualDetect_ali.py为可导入模块
+        # 实际使用时可能需要根据具体情况调整
+        visualDetect_ali.run_detection(robot=control, auto_execute=True)
+        
+        print(f"在 {station_config['name']} 的任务执行完成")
+        return True
+    except Exception as e:
+        print(f"执行任务时出错: {e}")
+        return False
+
+def main():
+    """主函数"""
+    print("=== 多站点任务系统 ===")
+    
+    # 加载系统配置
+    config = load_config()
+    
+    # 加载站点配置
+    stations = load_stations()
+    if not stations:
+        print("没有可用的站点配置，程序退出")
+        return
+    
+    # 创建集成控制实例
+    control = JAKAIntegrated(
+        robot_ip=config["robot_ip"],
+        ext_base_url=config.get("ext_base_url"),
+        agv_ip=config.get("agv_ip"),
+        agv_port=config.get("agv_port")
+    )
+    
+    # 初始化系统
+    if not control.setup_system():
+        print("系统初始化失败，程序退出")
+        return
+    
+    try:
+        # 按顺序执行各站点任务
+        for station_id, station_config in stations.items():
+            print(f"\n===== 开始 {station_config['name']} 任务 =====")
+            execute_task_at_station(control, station_id, station_config)
+            print(f"===== 完成 {station_config['name']} 任务 =====\n")
+            
+            # 任务间暂停
+            time.sleep(2)
+            
+    except KeyboardInterrupt:
+        print("\n用户中断程序")
+    except Exception as e:
+        print(f"程序执行过程中发生错误: {e}")
+    finally:
+        # # 关闭系统
+        # control.shutdown_system()
+        print("程序已退出")
+
+if __name__ == "__main__":
+    time.sleep(3)
+    main() 
