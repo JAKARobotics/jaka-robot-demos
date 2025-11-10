@@ -48,7 +48,9 @@ Demo repository for JAKA robots
 
 **演示视频：**
 
-<video src="./assets/LUMI_DEMO-v3.mp4" controls width="100%"></video>
+[📹 点击观看演示视频](./assets/LUMI_DEMO-v3.mp4)
+
+> 💡 提示：点击上方链接可在 GitHub 上预览视频
 
 **主要功能：**
 - ✅ **语音唤醒与交互**：基于 Whisper 的语音识别，支持自定义唤醒词（默认："lumi"）
