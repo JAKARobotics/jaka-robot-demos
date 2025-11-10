@@ -1,0 +1,62 @@
+{
+  "camera_settings": {
+    "camera_serial": "AY8V74300CZ",
+    "backup_serials": ["AY8V743013S", "AY8V74300F4"]
+  },
+  
+  "detection_settings": {
+    "use_enhanced_detection": true,
+    "max_attempts_per_detection": 2,
+    "timeout_seconds": 30,
+    "save_debug_images": false
+  },
+  
+  "high_precision_mode": {
+    "use_enhanced_detection": true,
+    "max_attempts_per_detection": 4,
+    "timeout_seconds": 45,
+    "save_debug_images": true
+  },
+  
+  "fast_mode": {
+    "use_enhanced_detection": false,
+    "max_attempts_per_detection": 1,
+    "timeout_seconds": 15,
+    "save_debug_images": false
+  },
+  
+  "multi_qr_mode": {
+    "use_enhanced_detection": true,
+    "max_attempts_per_detection": 3,
+    "timeout_seconds": 40,
+    "save_debug_images": true,
+    "min_detection_rounds": 3
+  },
+  
+  "image_enhancement": {
+    "enable_sharpening": true,
+    "enable_histogram_equalization": true,
+    "enable_adaptive_threshold": true,
+    "enable_otsu_threshold": true,
+    "enable_morphology": true,
+    "gaussian_blur_kernel": [3, 3],
+    "adaptive_threshold_block_size": 11,
+    "adaptive_threshold_c": 2,
+    "morphology_kernel_size": [2, 2]
+  },
+  
+  "output_settings": {
+    "snapshot_dir": "./qr_snapshots",
+    "debug_dir": "./qr_snapshots/debug",
+    "log_level": "INFO",
+    "save_successful_images": true,
+    "save_failed_images": false
+  },
+  
+  "performance_tuning": {
+    "frame_delay_ms": 100,
+    "max_detection_rounds": 5,
+    "early_exit_on_success": true,
+    "parallel_processing": false
+  }
+}

@@ -1,1 +1,27 @@
 个人笔记/
+
+# Kokoro TTS 模型权重（大文件，用户需自行下载）
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/kokoro_ckpts
+**/kokoro_ckpts/
+**/kokoro_ckpts/**
+*.pth
+*.pt
+# Kokoro 测试文件（可选）
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/tts_kokoro_test.py
+
+# MeloTTS（大文件，用户需自行下载）
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/MeloTTS
+
+# NLTK 数据（语音合成需要，用户可自行下载）
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/nltk_data
+
+# 模型文件（大文件）
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/data
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/model_vit
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/owlvit-base-pacth32
+
+# Whisper 模型文件（超过 100MB，用户需自行下载）
+LUMI_DEMO-v3/lumi_demo-owl-proj/lumi_nanoowl/whisper_main/whisper_models/*.pt
+
+# Docker compose 二进制文件（超过 50MB）
+LUMI_DEMO-v3/lumi_demo-owl-proj/docker-compose-linux-aarch64

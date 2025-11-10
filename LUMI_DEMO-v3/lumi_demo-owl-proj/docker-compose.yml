@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  nanoowl:
+    image: lumi-demo-owl:v5audio
+    container_name: lumi_nanoowl
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    network_mode: host
+    working_dir: /opt/nanoowl
+    volumes:
+      - ./lumi_nanoowl:/opt/nanoowl   # ← 关键：宿主机目录挂到容器里
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    devices:
+      - "/dev/snd:/dev/snd"
+      - "/dev/bus/usb:/dev/bus/usb" 
+    privileged: true
+    group_add:
+      - audio  

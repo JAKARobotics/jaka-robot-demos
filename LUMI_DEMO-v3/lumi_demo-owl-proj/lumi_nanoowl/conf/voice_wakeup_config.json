@@ -1,0 +1,37 @@
+{
+    "voice_recognition": {
+        "wakeup_word": "lumi",
+        "timeout": 10.0,
+        "record_seconds": 5
+    },
+    "voice_synthesis": {
+        "appid": "1be4dc2a",
+        "apikey": "e4e0a90722f7c18e8e40e9a414f7a100",
+        "apisecret": "YTI3YjllMTYwZjczMDJlZTUwZjI3NjI5"
+    },
+    "agv_control": {
+        "agv_ip": "192.168.10.10",
+        "agv_port": 31001,
+        "markers": {
+            "table": "table_marker",
+            "shelf": "shelf_marker",
+            "home": "home_marker"
+        }
+    },
+    "qr_scan": {
+        "camera_serial": "AY8V74300CZ"
+    },
+    "object_detection": {
+        "camera_serial": "AY8V74300F4",
+        "web_url": "http://localhost:7860/detect"
+    },
+    "robot_control": {
+        "robot_ip": "192.168.10.90",
+        "ext_base_url": "http://192.168.10.100"
+    },
+    "system": {
+        "log_level": "INFO",
+        "temp_dir": "./temp_audio",
+        "max_retries": 3
+    }
+} 

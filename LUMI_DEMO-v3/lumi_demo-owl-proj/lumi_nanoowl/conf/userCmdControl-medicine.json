@@ -1,0 +1,163 @@
+{
+    "cameraParams": {
+        "align_mode": "SW",
+        "enable_sync": true,
+        "saveImgPath": "./images/project1"
+    },
+    "objects": {
+        "moveObjects": "bottle",
+        "putObject": "doll"
+    },
+    "operationMode": "grasp_only",
+    "detection_results": "./detection",
+    "robotParams": {
+        "basePose": [-1.2427667453012297, 1.9872379605474098, 1.2117954113111526, -1.6717702158391754, -0.9488859665799617, 1.0826192659403806],
+
+        "putPose1": [-88, 28, 95, -24, 31, 60],
+        "putPose2": [-87, 60, 78, -33, 28, 60],
+        
+        "prepGraspPose": [-44, 67, 52, -19, 78, 89],
+
+        "med1G1":[-55, 62, 34, -33, 78, 79],
+        "med1G2":[-60, 52, 52, -34, 68, 79],
+
+        "med2G1":[-59, 86, 37, -28, 51, 79],
+        "med2G2":[-69, 77,57, -33, 38.5, 78.5],
+
+        "back":[-37, 18, 60, -8, 104.5, 78.5],
+
+
+        "prepPlacePose": [
+            279,
+            60,
+            79,
+            -40,
+            -2,
+            -102
+        ],
+        "relativeUpMotionHeight": 60,
+        "RelativeOffset-Z": 50,
+        "RelativeOffset-Zput": 30,
+        "RelativeOffset-X": 0,
+        "RelativeOffset-Y": 0,
+        "minZforSafe": 20
+    },
+    "calibrateParams": {
+        "robotIP": "192.168.10.90",
+        "CalibrateImageSaveDir": "./lumi_handCam/",
+        "boardRowNums": 8,
+        "boardCowNums": 11,
+        "boardLength": 10
+    },
+    "genNearPointParams": {
+        "nearPointInterval": 10,
+        "nearPointTimes": 10
+    },
+    "systemConfig": {
+        "robot_ip": "192.168.10.90",
+        "ext_base_url": "http://192.168.10.90:5000/api/extaxis",
+        "agv_ip": "192.168.10.10",
+        "agv_port": 31001
+    },
+    "extAxisLimits": {
+        "joint1": {
+            "min": 0,
+            "max": 270,
+            "desc": "\u5347\u964d\uff0c\u5355\u4f4dmm"
+        },
+        "joint2": {
+            "min": -140,
+            "max": 140,
+            "desc": "\u8170\u90e8\u65cb\u8f6c\uff0c\u5355\u4f4d\u5ea6"
+        },
+        "joint3": {
+            "min": -180,
+            "max": 180,
+            "desc": "\u5934\u90e8\u65cb\u8f6c\uff0c\u5355\u4f4d\u5ea6"
+        },
+        "joint4": {
+            "min": -5,
+            "max": 35,
+            "desc": "\u5934\u90e8\u4fef\u4ef0\uff0c\u5355\u4f4d\u5ea6"
+        }
+    },
+    "stations": {
+        "station1": {
+            "name": "station1",
+            "agv_marker": "desk",
+            "robot_home_pos": [
+                -67,
+                18,
+                115,
+                -34,
+                64,
+                83
+            ],
+            "ext_home_pos": [
+                220,
+                0,
+                0,
+                35
+            ],
+            "operation_mode": "grasp_only"
+        },
+        "station2": {
+            "name": "station2",
+            "agv_marker": "move",
+            "robot_home_pos": [
+                292,
+                26,
+                98,
+                -24,
+                58,
+                -102
+            ],
+            "ext_home_pos": [
+                10,
+                0,
+                0,
+                0
+            ],
+            "operation_mode": "none"
+        },
+        "station3": {
+            "name": "station3",
+            "agv_marker": "cabinet",
+            "robot_home_pos": [
+                292,
+                26,
+                98,
+                -24,
+                58,
+                -102
+            ],
+            "ext_home_pos": [
+                200,
+                0,
+                0,
+                0
+            ],
+            "operation_mode": "put_cola"
+        },
+        "station4": {
+            "name": "station4",
+            "agv_marker": "wait",
+            "robot_home_pos": [
+                292,
+                26,
+                98,
+                -24,
+                58,
+                -102
+            ],
+            "ext_home_pos": [
+                10,
+                0,
+                0,
+                0
+            ],
+            "operation_mode": "none"
+        }
+    },
+    "ttsVolume": 1.0
+}

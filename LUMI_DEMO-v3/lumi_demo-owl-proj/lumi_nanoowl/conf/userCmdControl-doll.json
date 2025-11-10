@@ -1,0 +1,179 @@
+{
+    "cameraParams": {
+        "align_mode": "SW",
+        "enable_sync": true,
+        "saveImgPath": "./images/project1"
+    },
+    "objects": {
+        "moveObjects": "bottle",
+        "putObject": "doll"
+    },
+    "operationMode": "grasp_only",
+    "detection_results": "./detection",
+    "robotParams": {
+        "basePose": [
+            -0.9552282629349128,
+            0.5709064403238441,
+            1.8161282378781247,
+            -0.9558977586844124,
+            1.628676015259004,
+            -1.9222867806698045
+        ],
+        "putPose": [
+            -1.2353232769926086,
+            0.9755251396613237,
+            0.937340828144674,
+            -0.766828164584511,
+            0.7520670886678439,
+            -1.5163718443261562
+        ],
+        "putPose2": [
+            -1.3132327215355792,
+            0.975836729502597,
+            0.7052543332947793,
+            -0.8078142129366043,
+            0.4937830787016696,
+            -1.5207341021039813
+        ],
+        "prepGraspPose": [
+            292,
+            26,
+            98,
+            -24,
+            58,
+            -102
+        ],
+        "prepPlacePose": [
+            279,
+            60,
+            79,
+            -40,
+            -2,
+            -102
+        ],
+        "relativeUpMotionHeight": 60,
+        "RelativeOffset-Z": -35,
+        "RelativeOffset-Zput": 30,
+        "RelativeOffset-X": 0,
+        "RelativeOffset-Y": 0,
+        "minZforSafe": 20
+    },
+    "calibrateParams": {
+        "robotIP": "192.168.10.90",
+        "CalibrateImageSaveDir": "./lumi_handCam/",
+        "boardRowNums": 8,
+        "boardCowNums": 11,
+        "boardLength": 10
+    },
+    "genNearPointParams": {
+        "nearPointInterval": 10,
+        "nearPointTimes": 10
+    },
+    "systemConfig": {
+        "robot_ip": "192.168.10.90",
+        "ext_base_url": "http://192.168.10.90:5000/api/extaxis",
+        "agv_ip": "192.168.10.10",
+        "agv_port": 31001
+    },
+    "extAxisLimits": {
+        "joint1": {
+            "min": 0,
+            "max": 270,
+            "desc": "\u5347\u964d\uff0c\u5355\u4f4dmm"
+        },
+        "joint2": {
+            "min": -140,
+            "max": 140,
+            "desc": "\u8170\u90e8\u65cb\u8f6c\uff0c\u5355\u4f4d\u5ea6"
+        },
+        "joint3": {
+            "min": -180,
+            "max": 180,
+            "desc": "\u5934\u90e8\u65cb\u8f6c\uff0c\u5355\u4f4d\u5ea6"
+        },
+        "joint4": {
+            "min": -5,
+            "max": 35,
+            "desc": "\u5934\u90e8\u4fef\u4ef0\uff0c\u5355\u4f4d\u5ea6"
+        }
+    },
+    "stations": {
+        "station1": {
+            "name": "station1",
+            "agv_marker": "desk",
+            "robot_home_pos": [
+                -67,
+                18,
+                115,
+                -34,
+                64,
+                83
+            ],
+            "ext_home_pos": [
+                220,
+                0,
+                0,
+                35
+            ],
+            "operation_mode": "grasp_only"
+        },
+        "station2": {
+            "name": "station2",
+            "agv_marker": "move",
+            "robot_home_pos": [
+                292,
+                26,
+                98,
+                -24,
+                58,
+                -102
+            ],
+            "ext_home_pos": [
+                10,
+                0,
+                0,
+                0
+            ],
+            "operation_mode": "none"
+        },
+        "station3": {
+            "name": "station3",
+            "agv_marker": "cabinet",
+            "robot_home_pos": [
+                292,
+                26,
+                98,
+                -24,
+                58,
+                -102
+            ],
+            "ext_home_pos": [
+                200,
+                0,
+                0,
+                0
+            ],
+            "operation_mode": "put_cola"
+        },
+        "station4": {
+            "name": "station4",
+            "agv_marker": "wait",
+            "robot_home_pos": [
+                292,
+                26,
+                98,
+                -24,
+                58,
+                -102
+            ],
+            "ext_home_pos": [
+                10,
+                0,
+                0,
+                0
+            ],
+            "operation_mode": "none"
+        }
+    },
+    "ttsVolume": 1.0
+}

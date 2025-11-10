@@ -1,0 +1,61 @@
+version: "3.9"
+services:
+  nanoowl:
+    image: lumi-demo-owl:v3
+    container_name: lumi_nanoowl
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    network_mode: host
+    working_dir: /opt/nanoowl
+    volumes:
+      - ./lumi_nanoowl:/opt/nanoowl   # ← 关键：宿主机目录挂到容器里
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      # 挂载 udev 规则文件
+      - /etc/udev/rules.d/99-obsensor-libusb.rules:/etc/udev/rules.d/99-obsensor-libusb.rules:ro
+      # 挂载 udev 数据库
+      - /run/udev:/run/udev:ro
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    devices:
+      # USB 设备
+      - "/dev/bus/usb:/dev/bus/usb"
+      # 视频设备 (摄像头)
+      - "/dev/video0:/dev/video0"
+      - "/dev/video1:/dev/video1"
+      - "/dev/video2:/dev/video2"
+      - "/dev/video3:/dev/video3"
+      - "/dev/video4:/dev/video4"
+      - "/dev/video5:/dev/video5"
+      - "/dev/video6:/dev/video6"
+      - "/dev/video7:/dev/video7"
+      - "/dev/video8:/dev/video8"
+      - "/dev/video9:/dev/video9"
+      - "/dev/video10:/dev/video10"
+      - "/dev/video11:/dev/video11"
+      - "/dev/video12:/dev/video12"
+      - "/dev/video13:/dev/video13"
+      # Media 设备
+      - "/dev/media0:/dev/media0"
+      - "/dev/media1:/dev/media1"
+      - "/dev/media2:/dev/media2"
+      - "/dev/media3:/dev/media3"
+      - "/dev/media4:/dev/media4"
+      - "/dev/media5:/dev/media5"
+      - "/dev/media6:/dev/media6"
+      - "/dev/media7:/dev/media7"
+      - "/dev/media8:/dev/media8"
+      # 音频设备
+      - "/dev/snd:/dev/snd"
+    privileged: true
+    group_add:
+      - audio
+      - video
+    # 添加额外的权限
+    cap_add:
+      - SYS_RAWIO
+      - SYS_ADMIN
+    # 确保容器可以访问所有设备
+    security_opt:
+      - seccomp:unconfined 
