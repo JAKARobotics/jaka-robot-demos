@@ -46,6 +46,10 @@ Demo repository for JAKA robots
 
 基于 **NanoOWL** 和 **语音唤醒**的智能交互式机器人应用，支持语音控制、实时目标检测和自动化任务执行。
 
+**演示视频：**
+
+<video src="./assets/LUMI_DEMO-v3.mp4" controls width="100%"></video>
+
 **主要功能：**
 - ✅ **语音唤醒与交互**：基于 Whisper 的语音识别，支持自定义唤醒词（默认："lumi"）
 - ✅ **实时目标检测**：基于 NanoOWL（OWL-ViT）的零样本目标检测
